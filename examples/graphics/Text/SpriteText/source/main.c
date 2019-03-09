@@ -48,8 +48,15 @@ int main(int argc, char **argv)
 		else if(Wiimote[0].Newpress.Two) { scale = 2; }
 		ML_SetSpriteScale(&font, scale, scale); // Play with the scale of the text !
 	
-		if(Wiimote[0].Held.Plus) { font.alpha++; }
-		else if(Wiimote[0].Held.Minus) { font.alpha--; } // and with alpha
+		// and with alpha
+		if(Wiimote[0].Held.Plus) {
+			if (font.alpha < 255)
+				font.alpha++; 
+		}
+		else if(Wiimote[0].Held.Minus) { 
+			if (font.alpha > 1)
+				font.alpha--; 
+		}
 		
 		ML_DrawSpriteText(&font, 100, 150, "Hello World !\n- Scale : %f \n- Alpha : %d", scale, font.alpha); 
 		ML_DrawSpriteSimpleText(&font, 100, 300, "Simple Text !");
