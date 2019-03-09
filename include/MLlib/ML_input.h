@@ -320,7 +320,7 @@ extern bool ML_EnableGuitar(u8 enabled);
 */
 extern void ML_RumbleWiimote(s32 wpad, int enabled);
 
-extern void _doSystemReset(void);
+extern void _doSystemReset(u32 irq, void *ctx);
 extern void _doPowerOff(void);
 extern void _doPadPowerOff(s32 chan);
 

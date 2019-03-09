@@ -631,8 +631,6 @@ void ML_GX_Init(void)
 	f32 yscale;
 	u32 xfbHeight;
 
-	GXColor background = {0x00, 0x00, 0x00, 0x00};
-
 	// setup the fifo and then init the flipper
 	gp_fifo = (u8 *) memalign(32,DEFAULT_FIFO_SIZE);
 	if(gp_fifo == NULL)

@@ -409,19 +409,19 @@ void ML_GetPadsGC(void)
 		Pad[i].Stick.Y = PAD_StickY(i);
 
 		// Stick Up
-		Pad[i].Stick.Released.Up = ((!Pad[i].Stick.Y > 65) && (Pad[i].Stick.Held.Up));
+		Pad[i].Stick.Released.Up = (!(Pad[i].Stick.Y > 65) && (Pad[i].Stick.Held.Up));
 		Pad[i].Stick.Newpress.Up = ((Pad[i].Stick.Y > 65) && (!Pad[i].Stick.Held.Up));
 		Pad[i].Stick.Held.Up = (Pad[i].Stick.Y > 65);
 		// Stick Down
-		Pad[i].Stick.Released.Down = ((!Pad[i].Stick.Y < -65) && (Pad[i].Stick.Held.Down));
+		Pad[i].Stick.Released.Down = (!(Pad[i].Stick.Y < -65) && (Pad[i].Stick.Held.Down));
 		Pad[i].Stick.Newpress.Down = ((Pad[i].Stick.Y < -65) && (!Pad[i].Stick.Held.Down));
 		Pad[i].Stick.Held.Down = (Pad[i].Stick.Y < -65);
 		// Stick Left
-		Pad[i].Stick.Released.Left = ((!Pad[i].Stick.X < -65) && (Pad[i].Stick.Held.Left));
+		Pad[i].Stick.Released.Left = (!(Pad[i].Stick.X < -65) && (Pad[i].Stick.Held.Left));
 		Pad[i].Stick.Newpress.Left = ((Pad[i].Stick.X < -65) && (!Pad[i].Stick.Held.Left));
 		Pad[i].Stick.Held.Left = (Pad[i].Stick.X < -65);
 		// Stick Right
-		Pad[i].Stick.Released.Right = ((!Pad[i].Stick.X > 65) && (Pad[i].Stick.Held.Right));
+		Pad[i].Stick.Released.Right = (!(Pad[i].Stick.X > 65) && (Pad[i].Stick.Held.Right));
 		Pad[i].Stick.Newpress.Right = ((Pad[i].Stick.X > 65) && (!Pad[i].Stick.Held.Right));
 		Pad[i].Stick.Held.Right = (Pad[i].Stick.X > 65);
 	}
@@ -431,7 +431,7 @@ void ML_GetPadsGC(void)
 //====================================================================
 //	Reset callback function.
 //====================================================================
-void _doSystemReset(void)
+void _doSystemReset(u32 irq, void *ctx)
 {
 	bReset = true;
 }

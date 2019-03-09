@@ -23,7 +23,6 @@ bool read_png_gx_file(char* file_name, ML_Image *image)
 
 	png_structp png_ptr;
 	png_infop info_ptr;
-	int number_of_passes;
 	png_bytep *row_pointers;
 
 	char header[8]; // Check for support PNG header.
@@ -82,7 +81,7 @@ bool read_png_gx_file(char* file_name, ML_Image *image)
 		return 0;
 	}
 
-	number_of_passes = png_set_interlace_handling(png_ptr);
+	png_set_interlace_handling(png_ptr);
 	png_read_update_info(png_ptr, info_ptr);
 
 	// Read File
@@ -115,9 +114,10 @@ bool read_png_gx_file(char* file_name, ML_Image *image)
 
 	fclose(fp);
 
-	if(image->data)
-		free(image->data); image->data = NULL;
-
+	if(image->data) {
+		free(image->data); 
+		image->data = NULL;
+	}
 	image->data = (u8*)(memalign(32, image->width * image->height * 4));
 	
 	// THANKS DHEWG!! My first born is yours.
@@ -189,7 +189,6 @@ bool read_png_gx_file_buffer(const u8* file_name, ML_Image *image)
 
 	png_structp png_ptr;
 	png_infop info_ptr;
-	int number_of_passes;
 	png_bytep *row_pointers;
 
 	char header[8]; // Check for support PNG header.
@@ -244,7 +243,7 @@ bool read_png_gx_file_buffer(const u8* file_name, ML_Image *image)
 		return 0;
 	}
 
-	number_of_passes = png_set_interlace_handling(png_ptr);
+	png_set_interlace_handling(png_ptr);
 	png_read_update_info(png_ptr, info_ptr);
 
 	// Read File
@@ -276,8 +275,10 @@ bool read_png_gx_file_buffer(const u8* file_name, ML_Image *image)
 	
 	png_read_image(png_ptr, row_pointers);
 
-	if(image->data)
-		free(image->data); image->data = NULL;
+	if(image->data) {
+		free(image->data); 
+		image->data = NULL;
+	}
 
 	image->data = (u8*)(memalign(32, image->width * image->height * 4));
 	
