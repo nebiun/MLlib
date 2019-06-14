@@ -31,121 +31,10 @@ void ML_GetPads(void)
 
 void ML_SetNumberOfPads(u8 wiimotesNumber, u8 gc_padsNumber)
 {
-	if(wiimotesNumber <= WPAD_MAX_WIIMOTES)	nb_wiimote = wiimotesNumber;
-	nb_pads_gc = gc_padsNumber;
-}
-
-// ---------------
-//       Wii
-// ---------------
-
-void ML_GetPadsWii(void)
-{
-	WPAD_ScanPads();
-
-	u8 i = 0;
-	u32 pressed = 0, up = 0;
-	ir_t ir;
-	orient_t orient;
-	gforce_t gforce;
-	float theta;
-	u32 type;
-	
-	for(i = 0; i < nb_wiimote; i++)
-	{
-		pressed = WPAD_ButtonsHeld(i);
-		up = WPAD_ButtonsUp(i);
-
-		// Is enabled
-		if((WPAD_Probe(i, &type)) == WPAD_ERR_NONE) Wiimote[i].Enabled = 1;
-		else Wiimote[i].Enabled = 0;
-
-		if(Wiimote[i].Enabled)
-		{		
-			// Button A
-			Wiimote[i].Released.A = (up & WPAD_BUTTON_A);
-			Wiimote[i].Newpress.A = (pressed & WPAD_BUTTON_A) && (!Wiimote[i].Held.A);
-			Wiimote[i].Held.A = (pressed & WPAD_BUTTON_A);
-			// Button B
-			Wiimote[i].Released.B = (up & WPAD_BUTTON_B);
-			Wiimote[i].Newpress.B = (pressed & WPAD_BUTTON_B) && (!Wiimote[i].Held.B);
-			Wiimote[i].Held.B = (pressed & WPAD_BUTTON_B);
-			// Button +
-			Wiimote[i].Released.Plus = (up & WPAD_BUTTON_PLUS);
-			Wiimote[i].Newpress.Plus = (pressed & WPAD_BUTTON_PLUS) && (!Wiimote[i].Held.Plus);
-			Wiimote[i].Held.Plus = (pressed & WPAD_BUTTON_PLUS);
-			// Button -
-			Wiimote[i].Released.Minus = (up & WPAD_BUTTON_MINUS);
-			Wiimote[i].Newpress.Minus = (pressed & WPAD_BUTTON_MINUS) && (!Wiimote[i].Held.Minus);
-			Wiimote[i].Held.Minus = (pressed & WPAD_BUTTON_MINUS);
-			// Button Home
-			Wiimote[i].Released.Home = (up & WPAD_BUTTON_HOME);
-			Wiimote[i].Newpress.Home = (pressed & WPAD_BUTTON_HOME) && (!Wiimote[i].Held.Home);
-			Wiimote[i].Held.Home = (pressed & WPAD_BUTTON_HOME);
-			// Button 1
-			Wiimote[i].Released.One = (up & WPAD_BUTTON_1);
-			Wiimote[i].Newpress.One = (pressed & WPAD_BUTTON_1) && (!Wiimote[i].Held.One);
-			Wiimote[i].Held.One = (pressed & WPAD_BUTTON_1);
-			// Button 2
-			Wiimote[i].Released.Two = (up & WPAD_BUTTON_2);
-			Wiimote[i].Newpress.Two = (pressed & WPAD_BUTTON_2) && (!Wiimote[i].Held.Two);
-			Wiimote[i].Held.Two = (pressed & WPAD_BUTTON_2);
-			// Button Up
-			Wiimote[i].Released.Up = (up & WPAD_BUTTON_UP);
-			Wiimote[i].Newpress.Up = (pressed & WPAD_BUTTON_UP) && (!Wiimote[i].Held.Up);
-			Wiimote[i].Held.Up = (pressed & WPAD_BUTTON_UP);
-			// Button Down
-			Wiimote[i].Released.Down = (up & WPAD_BUTTON_DOWN);
-			Wiimote[i].Newpress.Down = (pressed & WPAD_BUTTON_DOWN) && (!Wiimote[i].Held.Down);
-			Wiimote[i].Held.Down = (pressed & WPAD_BUTTON_DOWN);
-			// Button Left
-			Wiimote[i].Released.Left = (up & WPAD_BUTTON_LEFT);
-			Wiimote[i].Newpress.Left = (pressed & WPAD_BUTTON_LEFT) && (!Wiimote[i].Held.Left);
-			Wiimote[i].Held.Left = (pressed & WPAD_BUTTON_LEFT);
-			// Button Right
-			Wiimote[i].Released.Right = (up & WPAD_BUTTON_RIGHT);
-			Wiimote[i].Newpress.Right = (pressed & WPAD_BUTTON_RIGHT) && (!Wiimote[i].Held.Right);
-			Wiimote[i].Held.Right = (pressed & WPAD_BUTTON_RIGHT);
-
-			// IR
-			WPAD_IR(i, &ir);
-			Wiimote[i].IR.Valid = ir.valid;
-			if(ir.valid)
-			{
-				Wiimote[i].IR.JustX = ir.x;
-				Wiimote[i].IR.JustY = ir.y;
-				Wiimote[i].IR.Angle = ir.angle;
-	
-				theta = Wiimote[i].IR.Angle / 180.0 * M_PI;
-				Wiimote[i].IR.X = ir.x + 10*sinf(theta);
-				Wiimote[i].IR.Y = ir.y - 10*cosf(theta);
-			}
-			if(ir.smooth_valid)
-			{
-				Wiimote[i].IR.SmoothX = ir.sx;
-				Wiimote[i].IR.SmoothY = ir.sy;
-			}
-			if(ir.raw_valid) Wiimote[i].IR.Z = ir.z;
-
-			// Orientation
-			WPAD_Orientation(i, &orient);
-			Wiimote[i].Orient.Roll = orient.roll;
-			Wiimote[i].Orient.Pitch = orient.pitch;
-			Wiimote[i].Orient.JustRoll = orient.a_roll;
-			Wiimote[i].Orient.JustPitch = orient.a_pitch;
-			Wiimote[i].Orient.Yaw = orient.yaw;
-
-			// Gravity Force
-			WPAD_GForce(i, &gforce);
-			Wiimote[i].GForce.X = gforce.x;
-			Wiimote[i].GForce.Y = gforce.y;
-			Wiimote[i].GForce.Z = gforce.z;
-		}
-	}
-
-	if(_nunchuk_enabled) ML_GetNunchuk();
-	if(_cpad_enabled) ML_GetCPad();
-	if(_guitar_enabled) ML_GetGuitar();
+	if(wiimotesNumber <= WPAD_MAX_WIIMOTES)	
+		nb_wiimote = wiimotesNumber;
+	if(gc_padsNumber <= 4)
+		nb_pads_gc = gc_padsNumber;
 }
 
 int ML_GetWiimoteExtension(u8 wpad)
@@ -154,176 +43,259 @@ int ML_GetWiimoteExtension(u8 wpad)
 	return data->exp.type;
 }
 
-void ML_GetNunchuk(void)
+// ---------------
+//       Wii
+// ---------------
+
+static void _GetNunchuk(u8 i, WPADData *wd)
 {
-	u32 pressed = 0, up = 0;
-	u8 i = 0;
-	expansion_t data;
+	Nunchuks *nc = &Nunchuk[i];
+	
+	// Nunchuk C Button
+	nc->Released.C = (wd->btns_u & WPAD_NUNCHUK_BUTTON_C);
+	nc->Newpress.C = (wd->btns_d & WPAD_NUNCHUK_BUTTON_C);
+	nc->Held.C = (wd->btns_h & WPAD_NUNCHUK_BUTTON_C);
+
+	// Nunchuk Z Button
+	nc->Released.Z = (wd->btns_u & WPAD_NUNCHUK_BUTTON_Z);
+	nc->Newpress.Z = (wd->btns_d & WPAD_NUNCHUK_BUTTON_Z);
+	nc->Held.Z = (wd->btns_h & WPAD_NUNCHUK_BUTTON_Z);
+
+	// Nunchuk Stick
+	nc->Stick.Angle = wd->exp.nunchuk.js.ang;    
+	nc->Stick.Magnitude = wd->exp.nunchuk.js.mag; 
+	nc->GForce.X = wd->exp.nunchuk.gforce.x;
+	nc->GForce.Y = wd->exp.nunchuk.gforce.y;
+	nc->GForce.Z = wd->exp.nunchuk.gforce.z;
+	nc->Orient.Roll = wd->exp.nunchuk.orient.roll;
+	nc->Orient.JustRoll = wd->exp.nunchuk.orient.a_roll;
+	nc->Orient.Pitch = wd->exp.nunchuk.orient.pitch;
+	nc->Orient.JustPitch = wd->exp.nunchuk.orient.a_pitch;
+	nc->Orient.Yaw = wd->exp.nunchuk.orient.yaw;
+}
+
+static void _GetCPad(u8 i, WPADData *wd)
+{
+	CPads *cp = &CPad[i];
+	
+	// Button A
+	cp->Released.A = (wd->btns_u & WPAD_CLASSIC_BUTTON_A);
+	cp->Newpress.A = (wd->btns_d & WPAD_CLASSIC_BUTTON_A);
+	cp->Held.A = (wd->btns_h & WPAD_CLASSIC_BUTTON_A);
+	// Button B
+	cp->Released.B = (wd->btns_u & WPAD_CLASSIC_BUTTON_B);
+	cp->Newpress.B = (wd->btns_d & WPAD_CLASSIC_BUTTON_B);
+	cp->Held.B = (wd->btns_h & WPAD_CLASSIC_BUTTON_B);
+	// Button X
+	cp->Released.X = (wd->btns_u & WPAD_CLASSIC_BUTTON_X);
+	cp->Newpress.X = (wd->btns_d & WPAD_CLASSIC_BUTTON_X);
+	cp->Held.X = (wd->btns_h & WPAD_CLASSIC_BUTTON_X);
+	// Button Y
+	cp->Released.Y = (wd->btns_u & WPAD_CLASSIC_BUTTON_Y);
+	cp->Newpress.Y = (wd->btns_d & WPAD_CLASSIC_BUTTON_Y);
+	cp->Held.Y = (wd->btns_h & WPAD_CLASSIC_BUTTON_Y);
+	// Button Start
+	cp->Released.Start = (wd->btns_u & WPAD_CLASSIC_BUTTON_PLUS);
+	cp->Newpress.Start = (wd->btns_d & WPAD_CLASSIC_BUTTON_PLUS);
+	cp->Held.Start = (wd->btns_h & WPAD_CLASSIC_BUTTON_PLUS);
+	// Button Select
+	cp->Released.Select = (wd->btns_u & WPAD_CLASSIC_BUTTON_MINUS);
+	cp->Newpress.Select = (wd->btns_d & WPAD_CLASSIC_BUTTON_MINUS);
+	cp->Held.Select = (wd->btns_h & WPAD_CLASSIC_BUTTON_MINUS);
+	// Button Home
+	cp->Released.Home = (wd->btns_u & WPAD_CLASSIC_BUTTON_HOME);
+	cp->Newpress.Home = (wd->btns_d & WPAD_CLASSIC_BUTTON_HOME);
+	cp->Held.Home = (wd->btns_h & WPAD_CLASSIC_BUTTON_HOME);
+	// Button Up
+	cp->Released.Up = (wd->btns_u & WPAD_CLASSIC_BUTTON_UP);
+	cp->Newpress.Up = (wd->btns_d & WPAD_CLASSIC_BUTTON_UP);
+	cp->Held.Up = (wd->btns_h & WPAD_CLASSIC_BUTTON_UP);
+	// Button Down
+	cp->Released.Down = (wd->btns_u & WPAD_CLASSIC_BUTTON_DOWN);
+	cp->Newpress.Down = (wd->btns_d & WPAD_CLASSIC_BUTTON_DOWN);
+	cp->Held.Down = (wd->btns_h & WPAD_CLASSIC_BUTTON_DOWN);
+	// Button Left
+	cp->Released.Left = (wd->btns_u & WPAD_CLASSIC_BUTTON_LEFT);
+	cp->Newpress.Left = (wd->btns_d & WPAD_CLASSIC_BUTTON_LEFT);
+	cp->Held.Left = (wd->btns_h & WPAD_CLASSIC_BUTTON_LEFT);
+	// Button Right
+	cp->Released.Right = (wd->btns_u & WPAD_CLASSIC_BUTTON_RIGHT);
+	cp->Newpress.Right = (wd->btns_d & WPAD_CLASSIC_BUTTON_RIGHT);
+	cp->Held.Right = (wd->btns_h & WPAD_CLASSIC_BUTTON_RIGHT);
+	// Button L
+	cp->Released.L = (wd->btns_u & WPAD_CLASSIC_BUTTON_FULL_L);
+	cp->Newpress.L = (wd->btns_d & WPAD_CLASSIC_BUTTON_FULL_L);
+	cp->Held.L = (wd->btns_h & WPAD_CLASSIC_BUTTON_FULL_L);
+	// Button R
+	cp->Released.R = (wd->btns_u & WPAD_CLASSIC_BUTTON_FULL_R);
+	cp->Newpress.R = (wd->btns_d & WPAD_CLASSIC_BUTTON_FULL_R);
+	cp->Held.R = (wd->btns_h & WPAD_CLASSIC_BUTTON_FULL_R);
+	// Button ZL
+	cp->Released.ZL = (wd->btns_u & WPAD_CLASSIC_BUTTON_ZL);
+	cp->Newpress.ZL = (wd->btns_d & WPAD_CLASSIC_BUTTON_ZL);
+	cp->Held.ZL = (wd->btns_h & WPAD_CLASSIC_BUTTON_ZL);
+	// Button ZR
+	cp->Released.ZR = (wd->btns_u & WPAD_CLASSIC_BUTTON_ZR);
+	cp->Newpress.ZR = (wd->btns_d & WPAD_CLASSIC_BUTTON_ZR);
+	cp->Held.ZR = (wd->btns_h & WPAD_CLASSIC_BUTTON_ZR);
+	
+	// Sticks
+	cp->LeftStick.Angle = wd->exp.classic.ljs.ang;    
+	cp->LeftStick.Magnitude = wd->exp.classic.ljs.mag; 	
+	cp->RightStick.Angle = wd->exp.classic.rjs.ang;    
+	cp->RightStick.Magnitude = wd->exp.classic.rjs.mag; 
+}
+
+static void _GetGuitar(u8 i, WPADData *wd)
+{
+	GH *gt = &Guitar[i];
+
+	// Button +
+	gt->Released.Plus = (wd->btns_u & WPAD_GUITAR_HERO_3_BUTTON_PLUS);
+	gt->Newpress.Plus = (wd->btns_d & WPAD_GUITAR_HERO_3_BUTTON_PLUS);
+	gt->Held.Plus = (wd->btns_h & WPAD_GUITAR_HERO_3_BUTTON_PLUS);
+	// Button -
+	gt->Released.Minus = (wd->btns_u & WPAD_GUITAR_HERO_3_BUTTON_MINUS);
+	gt->Newpress.Minus = (wd->btns_d & WPAD_GUITAR_HERO_3_BUTTON_MINUS);
+	gt->Held.Minus = (wd->btns_h & WPAD_GUITAR_HERO_3_BUTTON_MINUS);
+	// Button Red
+	gt->Released.Red = (wd->btns_u & WPAD_GUITAR_HERO_3_BUTTON_RED);
+	gt->Newpress.Red = (wd->btns_d & WPAD_GUITAR_HERO_3_BUTTON_RED);
+	gt->Held.Red = (wd->btns_h & WPAD_GUITAR_HERO_3_BUTTON_RED);
+	// Button Yellow
+	gt->Released.Yellow = (wd->btns_u & WPAD_GUITAR_HERO_3_BUTTON_YELLOW);
+	gt->Newpress.Yellow = (wd->btns_d & WPAD_GUITAR_HERO_3_BUTTON_YELLOW);
+	gt->Held.Yellow = (wd->btns_h & WPAD_GUITAR_HERO_3_BUTTON_YELLOW);
+	// Button Green
+	gt->Released.Green = (wd->btns_u & WPAD_GUITAR_HERO_3_BUTTON_GREEN);
+	gt->Newpress.Green = (wd->btns_d & WPAD_GUITAR_HERO_3_BUTTON_GREEN);
+	gt->Held.Green = (wd->btns_h & WPAD_GUITAR_HERO_3_BUTTON_GREEN);
+	// Button Orange
+	gt->Released.Orange = (wd->btns_u & WPAD_GUITAR_HERO_3_BUTTON_ORANGE);
+	gt->Newpress.Orange = (wd->btns_d & WPAD_GUITAR_HERO_3_BUTTON_ORANGE);
+	gt->Held.Orange = (wd->btns_h & WPAD_GUITAR_HERO_3_BUTTON_ORANGE);
+	// Button Blue
+	gt->Released.Blue = (wd->btns_u & WPAD_GUITAR_HERO_3_BUTTON_BLUE);
+	gt->Newpress.Blue = (wd->btns_d & WPAD_GUITAR_HERO_3_BUTTON_BLUE);
+	gt->Held.Blue = (wd->btns_h & WPAD_GUITAR_HERO_3_BUTTON_BLUE);
+	// Button Strum Up
+	gt->Released.StrumUp = (wd->btns_u & WPAD_GUITAR_HERO_3_BUTTON_STRUM_UP);
+	gt->Newpress.StrumUp = (wd->btns_d & WPAD_GUITAR_HERO_3_BUTTON_STRUM_UP);
+	gt->Held.StrumUp = (wd->btns_h & WPAD_GUITAR_HERO_3_BUTTON_STRUM_UP);
+	// Button Strum Down
+	gt->Released.StrumDown = (wd->btns_u & WPAD_GUITAR_HERO_3_BUTTON_STRUM_DOWN);
+	gt->Newpress.StrumDown = (wd->btns_d & WPAD_GUITAR_HERO_3_BUTTON_STRUM_DOWN);
+	gt->Held.StrumDown = (wd->btns_h & WPAD_GUITAR_HERO_3_BUTTON_STRUM_DOWN);
+	
+	// Stick
+	gt->Stick.Angle = wd->exp.gh3.js.ang;    
+	gt->Stick.Magnitude = wd->exp.gh3.js.mag; 	
+}
+
+void ML_GetPadsWii(void)
+{
+	u8 i;
+
+	WPAD_ReadPending(WPAD_CHAN_ALL, NULL);
 	
 	for(i = 0; i < nb_wiimote; i++)
 	{
-		pressed = WPAD_ButtonsHeld(i);
-		up = WPAD_ButtonsUp(i);
+		u32 type;
+		WPads *wp = &Wiimote[i];
+		WPADData *wd = WPAD_Data(i);
+		
+		// Is enabled
+		if((WPAD_Probe(i, &type)) != WPAD_ERR_NONE) 
+			wp->Enabled = 0;
+		else {
+			float theta;
+			
+			wp->Enabled = 1;
 
-		// Nunchuk C Button
-		Nunchuk[i].Released.C = (up & WPAD_NUNCHUK_BUTTON_C);
-		Nunchuk[i].Newpress.C = (pressed & WPAD_NUNCHUK_BUTTON_C) && (!Nunchuk[i].Held.C);
-		Nunchuk[i].Held.C = (pressed & WPAD_NUNCHUK_BUTTON_C);
+			// Button A
+			wp->Released.A = (wd->btns_u & WPAD_BUTTON_A);
+			wp->Newpress.A = (wd->btns_d & WPAD_BUTTON_A);
+			wp->Held.A = (wd->btns_h & WPAD_BUTTON_A);
+			// Button B
+			wp->Released.B = (wd->btns_u & WPAD_BUTTON_B);
+			wp->Newpress.B = (wd->btns_d & WPAD_BUTTON_B);
+			wp->Held.B = (wd->btns_h & WPAD_BUTTON_B);
+			// Button +
+			wp->Released.Plus = (wd->btns_u & WPAD_BUTTON_PLUS);
+			wp->Newpress.Plus = (wd->btns_d & WPAD_BUTTON_PLUS);
+			wp->Held.Plus = (wd->btns_h & WPAD_BUTTON_PLUS);
+			// Button -
+			wp->Released.Minus = (wd->btns_u & WPAD_BUTTON_MINUS);
+			wp->Newpress.Minus = (wd->btns_d & WPAD_BUTTON_MINUS);
+			wp->Held.Minus = (wd->btns_h & WPAD_BUTTON_MINUS);
+			// Button Home
+			wp->Released.Home = (wd->btns_u & WPAD_BUTTON_HOME);
+			wp->Newpress.Home = (wd->btns_d & WPAD_BUTTON_HOME);
+			wp->Held.Home = (wd->btns_h & WPAD_BUTTON_HOME);
+			// Button 1
+			wp->Released.One = (wd->btns_u & WPAD_BUTTON_1);
+			wp->Newpress.One = (wd->btns_d & WPAD_BUTTON_1);
+			wp->Held.One = (wd->btns_h & WPAD_BUTTON_1);
+			// Button 2
+			wp->Released.Two = (wd->btns_u & WPAD_BUTTON_2);
+			wp->Newpress.Two = (wd->btns_d & WPAD_BUTTON_2);
+			wp->Held.Two = (wd->btns_h & WPAD_BUTTON_2);
+			// Button Up
+			wp->Released.Up = (wd->btns_u & WPAD_BUTTON_UP);
+			wp->Newpress.Up = (wd->btns_d & WPAD_BUTTON_UP);
+			wp->Held.Up = (wd->btns_h & WPAD_BUTTON_UP);
+			// Button Down
+			wp->Released.Down = (wd->btns_u & WPAD_BUTTON_DOWN);
+			wp->Newpress.Down = (wd->btns_d & WPAD_BUTTON_DOWN);
+			wp->Held.Down = (wd->btns_h & WPAD_BUTTON_DOWN);
+			// Button Left
+			wp->Released.Left = (wd->btns_u & WPAD_BUTTON_LEFT);
+			wp->Newpress.Left = (wd->btns_d & WPAD_BUTTON_LEFT);
+			wp->Held.Left = (wd->btns_h & WPAD_BUTTON_LEFT);
+			// Button Right
+			wp->Released.Right = (wd->btns_u & WPAD_BUTTON_RIGHT);
+			wp->Newpress.Right = (wd->btns_d & WPAD_BUTTON_RIGHT);
+			wp->Held.Right = (wd->btns_h & WPAD_BUTTON_RIGHT);
 
-		// Nunchuk Z Button
-		Nunchuk[i].Released.Z = (up & WPAD_NUNCHUK_BUTTON_Z);
-		Nunchuk[i].Newpress.Z = (pressed & WPAD_NUNCHUK_BUTTON_Z) && (!Nunchuk[i].Held.Z);
-		Nunchuk[i].Held.Z = (pressed & WPAD_NUNCHUK_BUTTON_Z);
-
-		// Nunchuk Stick
-		WPAD_Expansion(i, &data);
-		Nunchuk[i].Stick.Angle = data.nunchuk.js.ang;    
-		Nunchuk[i].Stick.Magnitude = data.nunchuk.js.mag; 
-		Nunchuk[i].GForce.X = data.nunchuk.gforce.x;
-		Nunchuk[i].GForce.Y = data.nunchuk.gforce.y;
-		Nunchuk[i].GForce.Z = data.nunchuk.gforce.z;
-		Nunchuk[i].Orient.Roll = data.nunchuk.orient.roll;
-		Nunchuk[i].Orient.JustRoll = data.nunchuk.orient.a_roll;
-		Nunchuk[i].Orient.Pitch = data.nunchuk.orient.pitch;
-		Nunchuk[i].Orient.JustPitch = data.nunchuk.orient.a_pitch;
-		Nunchuk[i].Orient.Yaw = data.nunchuk.orient.yaw;
-	}
-
-}
-
-void ML_GetCPad(void)
-{
-	u32 pressed = 0, up = 0;
-	u8 i = 0;
-	expansion_t data;
+			// IR
+			wp->IR.Valid = wd->ir.valid;
+			if(wd->ir.valid)
+			{
+				wp->IR.JustX = wd->ir.x;
+				wp->IR.JustY = wd->ir.y;
+				wp->IR.Angle = wd->ir.angle;
 	
-	for(i = 0; i < nb_wiimote; i++)
-	{
-		pressed = WPAD_ButtonsHeld(i);
-		up = WPAD_ButtonsUp(i);
+				theta = wp->IR.Angle / 180.0 * M_PI;
+				wp->IR.X = wd->ir.x + 10*sinf(theta);
+				wp->IR.Y = wd->ir.y - 10*cosf(theta);
+			}
+			if(wd->ir.smooth_valid)
+			{
+				wp->IR.SmoothX = wd->ir.sx;
+				wp->IR.SmoothY = wd->ir.sy;
+			}
+			if(wd->ir.raw_valid) 
+				wp->IR.Z = wd->ir.z;
 
-		// Button A
-		CPad[i].Released.A = (up & WPAD_CLASSIC_BUTTON_A);
-		CPad[i].Newpress.A = (pressed & WPAD_CLASSIC_BUTTON_A) && (!CPad[i].Held.A);
-		CPad[i].Held.A = (pressed & WPAD_CLASSIC_BUTTON_A);
-		// Button B
-		CPad[i].Released.B = (up & WPAD_CLASSIC_BUTTON_B);
-		CPad[i].Newpress.B = (pressed & WPAD_CLASSIC_BUTTON_B) && (!CPad[i].Held.B);
-		CPad[i].Held.B = (pressed & WPAD_CLASSIC_BUTTON_B);
-		// Button X
-		CPad[i].Released.X = (up & WPAD_CLASSIC_BUTTON_X);
-		CPad[i].Newpress.X = (pressed & WPAD_CLASSIC_BUTTON_X) && (!CPad[i].Held.X);
-		CPad[i].Held.X = (pressed & WPAD_CLASSIC_BUTTON_X);
-		// Button Y
-		CPad[i].Released.Y = (up & WPAD_CLASSIC_BUTTON_Y);
-		CPad[i].Newpress.Y = (pressed & WPAD_CLASSIC_BUTTON_Y) && (!CPad[i].Held.Y);
-		CPad[i].Held.Y = (pressed & WPAD_CLASSIC_BUTTON_Y);
-		// Button Start
-		CPad[i].Released.Start = (up & WPAD_CLASSIC_BUTTON_PLUS);
-		CPad[i].Newpress.Start = (pressed & WPAD_CLASSIC_BUTTON_PLUS) && (!CPad[i].Held.Start);
-		CPad[i].Held.Start = (pressed & WPAD_CLASSIC_BUTTON_PLUS);
-		// Button Select
-		CPad[i].Released.Select = (up & WPAD_CLASSIC_BUTTON_MINUS);
-		CPad[i].Newpress.Select = (pressed & WPAD_CLASSIC_BUTTON_MINUS) && (!CPad[i].Held.Select);
-		CPad[i].Held.Select = (pressed & WPAD_CLASSIC_BUTTON_MINUS);
-		// Button Home
-		CPad[i].Released.Home = (up & WPAD_CLASSIC_BUTTON_HOME);
-		CPad[i].Newpress.Home = (pressed & WPAD_CLASSIC_BUTTON_HOME) && (!CPad[i].Held.Home);
-		CPad[i].Held.Home = (pressed & WPAD_CLASSIC_BUTTON_HOME);
-		// Button Up
-		CPad[i].Released.Up = (up & WPAD_CLASSIC_BUTTON_UP);
-		CPad[i].Newpress.Up = (pressed & WPAD_CLASSIC_BUTTON_UP) && (!CPad[i].Held.Up);
-		CPad[i].Held.Up = (pressed & WPAD_CLASSIC_BUTTON_UP);
-		// Button Down
-		CPad[i].Released.Down = (up & WPAD_CLASSIC_BUTTON_DOWN);
-		CPad[i].Newpress.Down = (pressed & WPAD_CLASSIC_BUTTON_DOWN) && (!CPad[i].Held.Down);
-		CPad[i].Held.Down = (pressed & WPAD_CLASSIC_BUTTON_DOWN);
-		// Button Left
-		CPad[i].Released.Left = (up & WPAD_CLASSIC_BUTTON_LEFT);
-		CPad[i].Newpress.Left = (pressed & WPAD_CLASSIC_BUTTON_LEFT) && (!CPad[i].Held.Left);
-		CPad[i].Held.Left = (pressed & WPAD_CLASSIC_BUTTON_LEFT);
-		// Button Right
-		CPad[i].Released.Right = (up & WPAD_CLASSIC_BUTTON_RIGHT);
-		CPad[i].Newpress.Right = (pressed & WPAD_CLASSIC_BUTTON_RIGHT) && (!CPad[i].Held.Right);
-		CPad[i].Held.Right = (pressed & WPAD_CLASSIC_BUTTON_RIGHT);
-		// Button L
-		CPad[i].Released.L = (up & WPAD_CLASSIC_BUTTON_FULL_L);
-		CPad[i].Newpress.L = (pressed & WPAD_CLASSIC_BUTTON_FULL_L) && (!CPad[i].Held.L);
-		CPad[i].Held.L = (pressed & WPAD_CLASSIC_BUTTON_FULL_L);
-		// Button R
-		CPad[i].Released.R = (up & WPAD_CLASSIC_BUTTON_FULL_R);
-		CPad[i].Newpress.R = (pressed & WPAD_CLASSIC_BUTTON_FULL_R) && (!CPad[i].Held.R);
-		CPad[i].Held.R = (pressed & WPAD_CLASSIC_BUTTON_FULL_R);
-		// Button ZL
-		CPad[i].Released.ZL = (up & WPAD_CLASSIC_BUTTON_ZL);
-		CPad[i].Newpress.ZL = (pressed & WPAD_CLASSIC_BUTTON_ZL) && (!CPad[i].Held.ZL);
-		CPad[i].Held.ZL = (pressed & WPAD_CLASSIC_BUTTON_ZL);
-		// Button ZR
-		CPad[i].Released.ZR = (up & WPAD_CLASSIC_BUTTON_ZR);
-		CPad[i].Newpress.ZR = (pressed & WPAD_CLASSIC_BUTTON_ZR) && (!CPad[i].Held.ZR);
-		CPad[i].Held.ZR = (pressed & WPAD_CLASSIC_BUTTON_ZR);
-		
-		// Sticks
-		WPAD_Expansion(i, &data);
-		CPad[i].LeftStick.Angle = data.classic.ljs.ang;    
-		CPad[i].LeftStick.Magnitude = data.classic.ljs.mag; 	
-		CPad[i].RightStick.Angle = data.classic.rjs.ang;    
-		CPad[i].RightStick.Magnitude = data.classic.rjs.mag; 
-	}
-}
+			// Orientation
+			wp->Orient.Roll = wd->orient.roll;
+			wp->Orient.Pitch = wd->orient.pitch;
+			wp->Orient.JustRoll = wd->orient.a_roll;
+			wp->Orient.JustPitch = wd->orient.a_pitch;
+			wp->Orient.Yaw = wd->orient.yaw;
 
-void ML_GetGuitar(void)
-{
-	u32 pressed = 0, up = 0;
-	u8 i = 0;
-	expansion_t data;
-
-	for(i = 0; i < nb_wiimote; i++)
-	{
-		pressed = WPAD_ButtonsHeld(i);
-		up = WPAD_ButtonsUp(i);
-
-		// Button +
-		Guitar[i].Released.Plus = (up & WPAD_GUITAR_HERO_3_BUTTON_PLUS);
-		Guitar[i].Newpress.Plus = (pressed & WPAD_GUITAR_HERO_3_BUTTON_PLUS) && (!Guitar[i].Held.Plus);
-		Guitar[i].Held.Plus = (pressed & WPAD_GUITAR_HERO_3_BUTTON_PLUS);
-		// Button -
-		Guitar[i].Released.Minus = (up & WPAD_GUITAR_HERO_3_BUTTON_MINUS);
-		Guitar[i].Newpress.Minus = (pressed & WPAD_GUITAR_HERO_3_BUTTON_MINUS) && (!Guitar[i].Held.Minus);
-		Guitar[i].Held.Minus = (pressed & WPAD_GUITAR_HERO_3_BUTTON_MINUS);
-		// Button Red
-		Guitar[i].Released.Red = (up & WPAD_GUITAR_HERO_3_BUTTON_RED);
-		Guitar[i].Newpress.Red = (pressed & WPAD_GUITAR_HERO_3_BUTTON_RED) && (!Guitar[i].Held.Red);
-		Guitar[i].Held.Red = (pressed & WPAD_GUITAR_HERO_3_BUTTON_RED);
-		// Button Yellow
-		Guitar[i].Released.Yellow = (up & WPAD_GUITAR_HERO_3_BUTTON_YELLOW);
-		Guitar[i].Newpress.Yellow = (pressed & WPAD_GUITAR_HERO_3_BUTTON_YELLOW) && (!Guitar[i].Held.Yellow);
-		Guitar[i].Held.Yellow = (pressed & WPAD_GUITAR_HERO_3_BUTTON_YELLOW);
-		// Button Green
-		Guitar[i].Released.Green = (up & WPAD_GUITAR_HERO_3_BUTTON_GREEN);
-		Guitar[i].Newpress.Green = (pressed & WPAD_GUITAR_HERO_3_BUTTON_GREEN) && (!Guitar[i].Held.Green);
-		Guitar[i].Held.Green = (pressed & WPAD_GUITAR_HERO_3_BUTTON_GREEN);
-		// Button Orange
-		Guitar[i].Released.Orange = (up & WPAD_GUITAR_HERO_3_BUTTON_ORANGE);
-		Guitar[i].Newpress.Orange = (pressed & WPAD_GUITAR_HERO_3_BUTTON_ORANGE) && (!Guitar[i].Held.Orange);
-		Guitar[i].Held.Orange = (pressed & WPAD_GUITAR_HERO_3_BUTTON_ORANGE);
-		// Button Blue
-		Guitar[i].Released.Blue = (up & WPAD_GUITAR_HERO_3_BUTTON_BLUE);
-		Guitar[i].Newpress.Blue = (pressed & WPAD_GUITAR_HERO_3_BUTTON_BLUE) && (!Guitar[i].Held.Blue);
-		Guitar[i].Held.Blue = (pressed & WPAD_GUITAR_HERO_3_BUTTON_BLUE);
-		// Button Strum Up
-		Guitar[i].Released.StrumUp = (up & WPAD_GUITAR_HERO_3_BUTTON_STRUM_UP);
-		Guitar[i].Newpress.StrumUp = (pressed & WPAD_GUITAR_HERO_3_BUTTON_STRUM_UP) && (!Guitar[i].Held.StrumUp);
-		Guitar[i].Held.StrumUp = (pressed & WPAD_GUITAR_HERO_3_BUTTON_STRUM_UP);
-		// Button Strum Down
-		Guitar[i].Released.StrumDown = (up & WPAD_GUITAR_HERO_3_BUTTON_STRUM_DOWN);
-		Guitar[i].Newpress.StrumDown = (pressed & WPAD_GUITAR_HERO_3_BUTTON_STRUM_DOWN) && (!Guitar[i].Held.StrumDown);
-		Guitar[i].Held.StrumDown = (pressed & WPAD_GUITAR_HERO_3_BUTTON_STRUM_DOWN);
-		
-		// Stick
-		WPAD_Expansion(i, &data);
-		Guitar[i].Stick.Angle = data.gh3.js.ang;    
-		Guitar[i].Stick.Magnitude = data.gh3.js.mag; 	
+			// Gravity Force
+			wp->GForce.X = wd->gforce.x;
+			wp->GForce.Y = wd->gforce.y;
+			wp->GForce.Z = wd->gforce.z;
+			
+			if(_nunchuk_enabled) 
+				_GetNunchuk(i, wd);
+			if(_cpad_enabled) 
+				_GetCPad(i, wd);
+			if(_guitar_enabled) 
+				_GetGuitar(i, wd);
+		}
 	}
 }
 
@@ -339,91 +311,101 @@ void ML_RumbleWiimote(s32 wpad, int enabled)
 // ---------------
 //       GC
 // ---------------
+typedef struct {
+	u32 down;
+	u32 held;
+	u32 up;
+} control_t;
 
 void ML_GetPadsGC(void)
 {
-	PAD_ScanPads();
+	u8 i;
 
-	u8 i = 0;
-	u32 pressed = 0, up = 0;
+	PAD_ScanPads();
 
 	for(i = 0; i < nb_pads_gc; i++)
 	{
-		pressed = PAD_ButtonsHeld(i);
-		up = PAD_ButtonsUp(i);
+		GC_Pads *gcp;
+		control_t nbtn;
+		control_t *btn = &nbtn;
+		
+		btn->held = PAD_ButtonsHeld(i);
+		btn->up = PAD_ButtonsUp(i);
+		btn->down = PAD_ButtonsDown(i);
+		gcp = &Pad[i];
 
 		// Button Start
-		Pad[i].Released.Start = (up & PAD_BUTTON_START);
-		Pad[i].Newpress.Start = (pressed & PAD_BUTTON_START) && (!Pad[i].Held.Start);
-		Pad[i].Held.Start = (pressed & PAD_BUTTON_START);
+		gcp->Released.Start = (btn->up & PAD_BUTTON_START);
+		gcp->Newpress.Start = (btn->held & PAD_BUTTON_START) && (!gcp->Held.Start);
+		gcp->Held.Start = (btn->held & PAD_BUTTON_START);
 		// Button A
-		Pad[i].Released.A = (up & PAD_BUTTON_A);
-		Pad[i].Newpress.A = (pressed & PAD_BUTTON_A) && (!Pad[i].Held.A);
-		Pad[i].Held.A = (pressed & PAD_BUTTON_A);
+		gcp->Released.A = (btn->up & PAD_BUTTON_A);
+		gcp->Newpress.A = (btn->held & PAD_BUTTON_A) && (!gcp->Held.A);
+		gcp->Held.A = (btn->held & PAD_BUTTON_A);
 		// Button B
-		Pad[i].Released.B = (up & PAD_BUTTON_B);
-		Pad[i].Newpress.B = (pressed & PAD_BUTTON_B) && (!Pad[i].Held.B);
-		Pad[i].Held.B = (pressed & PAD_BUTTON_B);
+		gcp->Released.B = (btn->up & PAD_BUTTON_B);
+		gcp->Newpress.B = (btn->held & PAD_BUTTON_B) && (!gcp->Held.B);
+		gcp->Held.B = (btn->held & PAD_BUTTON_B);
 		// Button X
-		Pad[i].Released.X = (up & PAD_BUTTON_X);
-		Pad[i].Newpress.X = (pressed & PAD_BUTTON_X) && (!Pad[i].Held.X);
-		Pad[i].Held.X = (pressed & PAD_BUTTON_X);
+		gcp->Released.X = (btn->up & PAD_BUTTON_X);
+		gcp->Newpress.X = (btn->held & PAD_BUTTON_X) && (!gcp->Held.X);
+		gcp->Held.X = (btn->held & PAD_BUTTON_X);
 		// Button Y
-		Pad[i].Released.Y = (up & PAD_BUTTON_Y);
-		Pad[i].Newpress.Y = (pressed & PAD_BUTTON_Y) && (!Pad[i].Held.Y);
-		Pad[i].Held.Y = (pressed & PAD_BUTTON_Y);
+		gcp->Released.Y = (btn->up & PAD_BUTTON_Y);
+		gcp->Newpress.Y = (btn->held & PAD_BUTTON_Y) && (!gcp->Held.Y);
+		gcp->Held.Y = (btn->held & PAD_BUTTON_Y);
 
 		// Button Up
-		Pad[i].Released.Up = (up & PAD_BUTTON_UP);
-		Pad[i].Newpress.Up = (pressed & PAD_BUTTON_UP) && (!Pad[i].Held.Up);
-		Pad[i].Held.Up = (pressed & PAD_BUTTON_UP);
+		gcp->Released.Up = (btn->up & PAD_BUTTON_UP);
+		gcp->Newpress.Up = (btn->held & PAD_BUTTON_UP) && (!gcp->Held.Up);
+		gcp->Held.Up = (btn->held & PAD_BUTTON_UP);
 		// Button Down
-		Pad[i].Released.Down = (up & PAD_BUTTON_DOWN);
-		Pad[i].Newpress.Down = (pressed & PAD_BUTTON_DOWN) && (!Pad[i].Held.Down);
-		Pad[i].Held.Down = (pressed & PAD_BUTTON_DOWN);
+		gcp->Released.Down = (btn->up & PAD_BUTTON_DOWN);
+		gcp->Newpress.Down = (btn->held & PAD_BUTTON_DOWN) && (!gcp->Held.Down);
+		gcp->Held.Down = (btn->held & PAD_BUTTON_DOWN);
 		// Button Left
-		Pad[i].Released.Left = (up &  PAD_BUTTON_LEFT);
-		Pad[i].Newpress.Left = (pressed & PAD_BUTTON_LEFT) && (!Pad[i].Held.Left);
-		Pad[i].Held.Left = (pressed & PAD_BUTTON_LEFT);
+		gcp->Released.Left = (btn->up &  PAD_BUTTON_LEFT);
+		gcp->Newpress.Left = (btn->held & PAD_BUTTON_LEFT) && (!gcp->Held.Left);
+		gcp->Held.Left = (btn->held & PAD_BUTTON_LEFT);
 		// Button Right
-		Pad[i].Released.Right = (up & PAD_BUTTON_RIGHT);
-		Pad[i].Newpress.Right = (pressed & PAD_BUTTON_RIGHT) && (!Pad[i].Held.Right);
-		Pad[i].Held.Right = (pressed & PAD_BUTTON_RIGHT);
+		gcp->Released.Right = (btn->up & PAD_BUTTON_RIGHT);
+		gcp->Newpress.Right = (btn->held & PAD_BUTTON_RIGHT) && (!gcp->Held.Right);
+		gcp->Held.Right = (btn->held & PAD_BUTTON_RIGHT);
 
 		// Trigger L
-		Pad[i].Released.L = (up & PAD_TRIGGER_L);
-		Pad[i].Newpress.L = (pressed & PAD_TRIGGER_L) && (!Pad[i].Held.L);
-		Pad[i].Held.L = (pressed & PAD_TRIGGER_L);
+		gcp->Released.L = (btn->up & PAD_TRIGGER_L);
+		gcp->Newpress.L = (btn->held & PAD_TRIGGER_L) && (!gcp->Held.L);
+		gcp->Held.L = (btn->held & PAD_TRIGGER_L);
 		// Trigger R
-		Pad[i].Released.R = (up & PAD_TRIGGER_R);
-		Pad[i].Newpress.R = (pressed & PAD_TRIGGER_R) && (!Pad[i].Held.R);
-		Pad[i].Held.R = (pressed & PAD_TRIGGER_R);
+		gcp->Released.R = (btn->up & PAD_TRIGGER_R);
+		gcp->Newpress.R = (btn->held & PAD_TRIGGER_R) && (!gcp->Held.R);
+		gcp->Held.R = (btn->held & PAD_TRIGGER_R);
 		// Trigger Z
-		Pad[i].Released.Z = (up & PAD_TRIGGER_Z);
-		Pad[i].Newpress.Z = (pressed & PAD_TRIGGER_Z) && (!Pad[i].Held.Z);
-		Pad[i].Held.Z = (pressed & PAD_TRIGGER_Z);
+		gcp->Released.Z = (btn->up & PAD_TRIGGER_Z);
+		gcp->Newpress.Z = (btn->held & PAD_TRIGGER_Z) && (!gcp->Held.Z);
+		gcp->Held.Z = (btn->held & PAD_TRIGGER_Z);
 
 		// Stick X
-		Pad[i].Stick.X = PAD_StickX(i);
+		gcp->Stick.X = PAD_StickX(i);
 		// Stick Y
-		Pad[i].Stick.Y = PAD_StickY(i);
+		gcp->Stick.Y = PAD_StickY(i);
 
 		// Stick Up
-		Pad[i].Stick.Released.Up = (!(Pad[i].Stick.Y > 65) && (Pad[i].Stick.Held.Up));
-		Pad[i].Stick.Newpress.Up = ((Pad[i].Stick.Y > 65) && (!Pad[i].Stick.Held.Up));
-		Pad[i].Stick.Held.Up = (Pad[i].Stick.Y > 65);
+		gcp->Stick.Released.Up = (!(gcp->Stick.Y > 65) && (gcp->Stick.Held.Up));
+		gcp->Stick.Newpress.Up = ((gcp->Stick.Y > 65) && (!gcp->Stick.Held.Up));
+		gcp->Stick.Held.Up = (gcp->Stick.Y > 65);
 		// Stick Down
-		Pad[i].Stick.Released.Down = (!(Pad[i].Stick.Y < -65) && (Pad[i].Stick.Held.Down));
-		Pad[i].Stick.Newpress.Down = ((Pad[i].Stick.Y < -65) && (!Pad[i].Stick.Held.Down));
-		Pad[i].Stick.Held.Down = (Pad[i].Stick.Y < -65);
+		gcp->Stick.Released.Down = (!(gcp->Stick.Y < -65) && (gcp->Stick.Held.Down));
+		gcp->Stick.Newpress.Down = ((gcp->Stick.Y < -65) && (!gcp->Stick.Held.Down));
+		gcp->Stick.Held.Down = (gcp->Stick.Y < -65);
 		// Stick Left
-		Pad[i].Stick.Released.Left = (!(Pad[i].Stick.X < -65) && (Pad[i].Stick.Held.Left));
-		Pad[i].Stick.Newpress.Left = ((Pad[i].Stick.X < -65) && (!Pad[i].Stick.Held.Left));
-		Pad[i].Stick.Held.Left = (Pad[i].Stick.X < -65);
+		gcp->Stick.Released.Left = (!(gcp->Stick.X < -65) && (gcp->Stick.Held.Left));
+		gcp->Stick.Newpress.Left = ((gcp->Stick.X < -65) && (!gcp->Stick.Held.Left));
+		gcp->Stick.Held.Left = (gcp->Stick.X < -65);
 		// Stick Right
-		Pad[i].Stick.Released.Right = (!(Pad[i].Stick.X > 65) && (Pad[i].Stick.Held.Right));
-		Pad[i].Stick.Newpress.Right = ((Pad[i].Stick.X > 65) && (!Pad[i].Stick.Held.Right));
-		Pad[i].Stick.Held.Right = (Pad[i].Stick.X > 65);
+		gcp->Stick.Released.Right = (!(gcp->Stick.X > 65) && (gcp->Stick.Held.Right));
+		gcp->Stick.Newpress.Right = ((gcp->Stick.X > 65) && (!gcp->Stick.Held.Right));
+		gcp->Stick.Held.Right = (gcp->Stick.X > 65);
 	}
 }
 

@@ -92,7 +92,10 @@ bool _loadFont(ML_Font *font, const char *filename, const uint8_t* buffer, FT_Lo
 		rewind(fp);
 
 		char *ftBuffer = (char *)malloc(size);
-		if(ftBuffer ==  NULL) return 0;
+		if(ftBuffer ==  NULL) {
+			fclose(fp);
+			return 0;
+		}
 
 		fread(ftBuffer, 1, size, fp);
 		fclose(fp);
