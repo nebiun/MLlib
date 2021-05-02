@@ -91,9 +91,10 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES), -iquote $(CURDIR)/$(dir)) \
 #---------------------------------------------------------------------------------
 # build a list of library paths
 #---------------------------------------------------------------------------------
-export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
-                    $(foreach dir,$(PORTLIBS),-L$(dir)/lib) \
-					-L$(LIBOGC_LIB)
+export LIBPATHS	:=	-L$(LIBOGC_LIB) \
+					$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
+                    $(foreach dir,$(PORTLIBS),-L$(dir)/lib)
+					
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
 .PHONY: $(BUILD) clean

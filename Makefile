@@ -33,7 +33,7 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	`freetype-config --libs` -logc -lwiiuse -lbte -lm -lasnd
+#LIBS	:=	`freetype-config --libs` -logc -lwiiuse -lbte -lm -lasnd
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

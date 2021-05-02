@@ -26,7 +26,6 @@
 #include <ogc/ios.h>
 #include <ogc/ipc.h>
 #include <ogc/lwp_watchdog.h>
-#include <mp3player.h>
 #include <asndlib.h>
 #include <aesndlib.h>
 #include <gcmodplay.h>
@@ -37,6 +36,7 @@
 #include <wiiuse/wpad.h>
 #include <fat.h>
 #include <wchar.h>
+#include <mp3player.h>
 
 // libpng ported to Wii by mavakadachi 
 #include <png.h>
