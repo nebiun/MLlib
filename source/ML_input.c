@@ -299,9 +299,29 @@ void ML_GetPadsWii(void)
 	}
 }
 
-bool ML_EnableNunchuk(u8 enabled) { if(enabled == 0 || enabled == 1) { _nunchuk_enabled = enabled; } return _nunchuk_enabled; }
-bool ML_EnableCPad(u8 enabled) { if(enabled == 0 || enabled == 1) { _cpad_enabled = enabled; } return _cpad_enabled; }
-bool ML_EnableGuitar(u8 enabled) { if(enabled == 0 || enabled == 1) { _guitar_enabled = enabled; } return _guitar_enabled; }
+bool ML_EnableNunchuk(u8 enabled) 
+{ 
+	if(enabled == 0 || enabled == 1) { 
+		_nunchuk_enabled = enabled; 
+	} 
+	return _nunchuk_enabled; 
+}
+
+bool ML_EnableCPad(u8 enabled) 
+{ 
+	if(enabled == 0 || enabled == 1) { 
+		_cpad_enabled = enabled; 
+	} 
+	return _cpad_enabled; 
+}
+
+bool ML_EnableGuitar(u8 enabled) 
+{ 
+	if(enabled == 0 || enabled == 1) { 
+		_guitar_enabled = enabled;
+	} 
+	return _guitar_enabled; 
+}
 
 void ML_RumbleWiimote(s32 wpad, int enabled)
 {

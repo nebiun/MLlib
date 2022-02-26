@@ -48,7 +48,7 @@
 
 // MLlib now
 #include "MLlib/ML_define.h"
-#include "MLlib/globals.h"
+#include "MLlib/ML_globals.h"
 
 #include "MLlib/ML_draw.h"
 #include "MLlib/ML_time.h"
