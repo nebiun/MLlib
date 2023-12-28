@@ -103,10 +103,11 @@ bool ML_LoadBackgroundFromFile(ML_Image *image, ML_Background *background, char 
 	return _loadImage(image, NULL, background, filename, NULL, x, y, 1);
 }
 
-
 void ML_DrawTexture(GXTexObj *texObj, u8 *data,  int x, int y, u16 width, u16 height, float angle, float scaleX, float scaleY, u8 alpha)
 {
-	_drawImage(texObj, data, x, y, width, height, scaleX, scaleY, angle, alpha, 0, 0, 0, 0, 0, 0);
+	GXColor color = (GXColor){ 0xff, 0xff, 0xff, alpha };
+	
+	_drawImage(texObj, data, x, y, width, height, scaleX, scaleY, angle, color, 0, 0, 0, 0, 0, 0);
 }
 
 void ML_DrawRect(int x, int y, u16 width, u16 height, u32 rgba, bool filled)
@@ -270,7 +271,7 @@ void ML_SplashScreen(void)
 	{
 		if(Wiimote[0].Held.A) { ok2 = 1; }
 		
-		_drawImage(&image.texObj, image.data, 0, 0, image.width, image.height, 1, 1, 0, 255, 0, 0, 0, 0, 0, 0);
+		_drawImage(&image.texObj, image.data, 0, 0, image.width, image.height, 1, 1, 0, (GXColor){255, 255, 255, 255}, 0, 0, 0, 0, 0, 0);
 		
 		i++;
 		if(i >= 500) ok2 = 1;
@@ -392,8 +393,7 @@ bool ML_Screenshot(const char *filename)
 }
 
 //---------------------------------------------
-
-void _drawImage(GXTexObj *texObj, u8 *data, int x, int y, u16 _width, u16 _height, float scaleX, float scaleY, float angle, u8 alpha, bool tiled, u16 frame, u16 tileWidth, u16 tileHeight, bool flipX, bool flipY)
+void _drawImage(GXTexObj *texObj, u8 *data, int x, int y, u16 _width, u16 _height, float scaleX, float scaleY, float angle, GXColor color, bool tiled, u16 frame, u16 tileWidth, u16 tileHeight, bool flipX, bool flipY)
 {
 	Mtx44 m, m1, m2, mv;
 	u16 width, height;
@@ -431,19 +431,19 @@ void _drawImage(GXTexObj *texObj, u8 *data, int x, int y, u16 _width, u16 _heigh
 		
 		GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
 			GX_Position3f32(-width*scaleX, -height*scaleY, 0);
-			GX_Color4u8(0xFF, 0xFF, 0xFF, alpha);
+			GX_Color4u8(color.r, color.g, color.b, color.a);
 			GX_TexCoord2f32(flipX, flipY);
 
 			GX_Position3f32(width*scaleX, -height*scaleY, 0);
-			GX_Color4u8(0xFF, 0xFF, 0xFF, alpha);
+			GX_Color4u8(color.r, color.g, color.b, color.a);
 			GX_TexCoord2f32(!flipX, flipY);
 
 			GX_Position3f32(width*scaleX, height*scaleY, 0);
-			GX_Color4u8(0xFF, 0xFF, 0xFF, alpha);
+			GX_Color4u8(color.r, color.g, color.b, color.a);
 			GX_TexCoord2f32(!flipX, !flipY);
 
 			GX_Position3f32(-width*scaleX, height*scaleY, 0);
-			GX_Color4u8(0xFF, 0xFF, 0xFF, alpha);
+			GX_Color4u8(color.r, color.g, color.b, color.a);
 			GX_TexCoord2f32(flipX, !flipY);
 		GX_End();
 	}
@@ -504,19 +504,19 @@ void _drawImage(GXTexObj *texObj, u8 *data, int x, int y, u16 _width, u16 _heigh
 	
 		GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
 			GX_Position3f32(-width, -height, 0);
-			GX_Color4u8(0xFF, 0xFF, 0xFF, alpha);
+			GX_Color4u8(color.r, color.g, color.b, color.a);
 			GX_TexCoord2f32(s1, t1);
 
 			GX_Position3f32(width, -height, 0);
-			GX_Color4u8(0xFF, 0xFF, 0xFF, alpha);
+			GX_Color4u8(color.r, color.g, color.b, color.a);
 			GX_TexCoord2f32(s2, t1);
 
 			GX_Position3f32(width, height, 0);
-			GX_Color4u8(0xFF, 0xFF, 0xFF, alpha);
+			GX_Color4u8(color.r, color.g, color.b, color.a);
 			GX_TexCoord2f32(s2, t2);
 
 			GX_Position3f32(-width, height, 0);
-			GX_Color4u8(0xFF, 0xFF, 0xFF, alpha);
+			GX_Color4u8(color.r, color.g, color.b, color.a);
 			GX_TexCoord2f32(s1, t2);
 		GX_End();
 	}
@@ -704,7 +704,7 @@ void ML_GX_Init(void)
     GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     GX_SetAlphaUpdate(GX_TRUE);
     GX_SetAlphaCompare(GX_GREATER, 0, GX_AOP_AND, GX_ALWAYS, 0);
-    GX_SetColorUpdate(GX_ENABLE);
+    GX_SetColorUpdate(GX_TRUE);
     GX_SetCullMode(GX_CULL_NONE);
 	GX_SetClipMode( GX_CLIP_ENABLE );
     GX_SetScissor(0, 0, _screenWidth, _screenHeight);
@@ -771,8 +771,6 @@ void ML_InitVideo(void)
 	else
 		while(VIDEO_GetNextField())
 			VIDEO_WaitVSync();
-
-	whichfb ^= 1;
 }
 
 //---------------------------------------------

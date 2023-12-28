@@ -19,7 +19,7 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	source
 DATA		:=	data  
-INCLUDES	:=	
+INCLUDES	:=	include include/MLlib
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -107,7 +107,8 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).a $(CURDIR)/lib/libml.a
+	@rm -fr $(BUILD) $(OUTPUT).a $(CURDIR)/lib/libml.a $(CURDIR)/docs
+
 #---------------------------------------------------------------------------------
 install:
 	@echo Installing library...
@@ -126,6 +127,11 @@ uninstall:
 	@echo Removing include files...
 	@rm -fr $(PORTLIBS_PATH)/wii/include/MLlib $(PORTLIBS_PATH)/wii/include/MLlib.h
 	@echo Done
+
+#---------------------------------------------------------------------------------
+docs: mllib.dox $(foreach dir,$(INCLUDES),$(wildcard $(dir)/*.h))
+	rm -fr docs
+	doxygen mllib.dox
 
 #---------------------------------------------------------------------------------
 run:

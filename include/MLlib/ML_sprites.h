@@ -52,6 +52,17 @@ extern void ML_DrawSpriteFull(ML_Sprite *sprite, int x, int y, float angle, floa
 extern void ML_InitTile(ML_Sprite *sprite, u16 width, u16 height);
 
 /**
+* \fn void ML_DrawTileColor(ML_Sprite *sprite, int x, int y, GXColor color, u16 frame);
+* \brief This function draws a colored tile.
+* @param sprite Sprite
+* @param x X position
+* @param y Y position
+* @param color Tile color in RGBA
+* @param frame Tile n°<frame>
+*/
+extern void ML_DrawTileColor(ML_Sprite *sprite, int x, int y, GXColor color, u16 frame);
+
+/**
 * \fn void ML_DrawTile(ML_Sprite *sprite, int x, int y, u16 frame)
 * \brief This function draws a tile.
 * @param sprite Sprite
@@ -59,7 +70,18 @@ extern void ML_InitTile(ML_Sprite *sprite, u16 width, u16 height);
 * @param y Y position
 * @param frame Tile n°<frame>
 */
-extern void ML_DrawTile(ML_Sprite *sprite, int x, int y, u16 frame);
+#define ML_DrawTile(sprite, x, y, frame)	ML_DrawTileColor(sprite, x, y, (GXColor){0xff,0xff,0xff,((ML_Sprite *)sprite)->alpha}, frame)
+
+/**
+* \fn void ML_DrawSpriteColorText(ML_Sprite *sprite, int x, int y, GXColor color, const char *text, ...)
+* \brief This function draws some graphic text.
+* @param sprite Sprite for extra-features like transparency, etc...
+* @param x X position
+* @param y Y position
+* @param color Tile color in RGBA
+* @param text Text which can have arguments
+*/
+extern void ML_DrawSpriteColorText(ML_Sprite *sprite, int x, int y, GXColor color, const char *text, ...);
 
 /**
 * \fn void ML_DrawSpriteText(ML_Sprite *sprite, int x, int y, const char *text, ...)
@@ -69,7 +91,19 @@ extern void ML_DrawTile(ML_Sprite *sprite, int x, int y, u16 frame);
 * @param y Y position
 * @param text Text which can have arguments
 */
-extern void ML_DrawSpriteText(ML_Sprite *sprite, int x, int y, const char *text, ...);
+#define ML_DrawSpriteText(sprite, x, y, ...)		ML_DrawSpriteColorText(sprite, x, y, (GXColor){0xff,0xff,0xff,((ML_Sprite *)sprite)->alpha}, __VA_ARGS__)
+
+/**
+* \fn void ML_DrawSpriteColorTextLimit(ML_Sprite *sprite, int x, int y, GXColor color, u8 limit, char *text, ...)
+* \brief This function draws some graphic text with arguments and a limit of characters.
+* @param sprite Sprite for extra-features like transparency, etc...
+* @param x X position
+* @param y Y position
+* @param color in RGBA
+* @param limit Limit of characters
+* @param text Text which can have arguments
+*/
+extern void ML_DrawSpriteColorTextLimit(ML_Sprite *sprite, int x, int y, GXColor color, u8 limit, char *text, ...);
 
 /**
 * \fn void ML_DrawSpriteTextLimit(ML_Sprite *sprite, int x, int y, char *text, u8 limit)
@@ -80,7 +114,20 @@ extern void ML_DrawSpriteText(ML_Sprite *sprite, int x, int y, const char *text,
 * @param text Text
 * @param limit Limit of characters
 */
-extern void ML_DrawSpriteTextLimit(ML_Sprite *sprite, int x, int y, char *text, u8 limit);
+#define ML_DrawSpriteTextLimit(sprite, x, y, text, limit)	ML_DrawSpriteColorTextLimit(sprite, x, y, (GXColor){0xff,0xff,0xff,((ML_Sprite *)sprite)->alpha}, limit, text)
+
+/**
+* \fn void ML_DrawSpriteColorTextBox(ML_Sprite *sprite, int x, int y, int x2, int y2, GXColor color, const char *text, ...)
+* \brief This function draws some graphic text within a box.
+* @param sprite Sprite for extra-features like transparency, etc...
+* @param x X position of the left-upper corner
+* @param y Y position of the left-bottom corner
+* @param x2 X position of the right-upper corner
+* @param y2 Y position of the right-bottom corner
+* @param color in RGBA
+* @param text Text
+*/
+extern void ML_DrawSpriteColorTextBox(ML_Sprite *sprite, int x, int y, int x2, int y2, GXColor color, const char *text, ...);
 
 /**
 * \fn void ML_DrawSpriteTextBox(ML_Sprite *sprite, int x, int y, int x2, int y2, const char *text, ...)
@@ -92,7 +139,18 @@ extern void ML_DrawSpriteTextLimit(ML_Sprite *sprite, int x, int y, char *text, 
 * @param y2 Y position of the right-bottom corner
 * @param text Text
 */
-extern void ML_DrawSpriteTextBox(ML_Sprite *sprite, int x, int y, int x2, int y2, const char *text, ...);
+#define ML_DrawSpriteTextBox(sprite, x, y, x2, y2, ...)	ML_DrawSpriteColorTextBox(sprite, x, y, x2, y2, (GXColor){0xff,0xff,0xff,((ML_Sprite *)sprite)->alpha}, __VA_ARGS__)
+
+/**
+* \fn void ML_DrawSpriteColorSimpleText(ML_Sprite *sprite, int x, int y, GXColor color, const char *text)
+* \brief This function draws some graphic text, but with no arguments and other funny thing : just faster !
+* @param sprite Sprite for extra-features like transparency, etc...
+* @param x X position
+* @param y Y position
+* @param color in RGBA
+* @param text Text
+*/
+extern void ML_DrawSpriteColorSimpleText(ML_Sprite *sprite, int x, int y, GXColor color, const char *text);
 
 /**
 * \fn void ML_DrawSpriteSimpleText(ML_Sprite *sprite, int x, int y, const char *text)
@@ -102,7 +160,7 @@ extern void ML_DrawSpriteTextBox(ML_Sprite *sprite, int x, int y, int x2, int y2
 * @param y Y position
 * @param text Text
 */
-extern void ML_DrawSpriteSimpleText(ML_Sprite *sprite, int x, int y, const char *text);
+#define ML_DrawSpriteSimpleText(sprite, x, y, text)		ML_DrawSpriteColorSimpleText(sprite, x, y, (GXColor){0xff,0xff,0xff,((ML_Sprite *)sprite)->alpha}, text)
 
 /**
 * \fn void ML_CloneSprite(ML_Sprite *sprite1, ML_Sprite *sprite2)

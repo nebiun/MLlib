@@ -29,7 +29,7 @@ void ML_DrawSpriteXY(ML_Sprite *sprite, int x, int y)
 	
 	if(!sprite->animated)
 	{
-		_drawImage(&sprite->image->texObj, sprite->image->data, sprite->x, sprite->y, sprite->width, sprite->height, sprite->scaleX, sprite->scaleY, sprite->angle, sprite->alpha, sprite->tiled, sprite->currentFrame, sprite->tileWidth, sprite->tileHeight, sprite->flipX, sprite->flipY);
+		_drawImage(&sprite->image->texObj, sprite->image->data, sprite->x, sprite->y, sprite->width, sprite->height, sprite->scaleX, sprite->scaleY, sprite->angle, (GXColor){255, 255, 255, sprite->alpha}, sprite->tiled, sprite->currentFrame, sprite->tileWidth, sprite->tileHeight, sprite->flipX, sprite->flipY);
 	}
 	else
 	{
@@ -77,100 +77,110 @@ void ML_InitTile(ML_Sprite *sprite, u16 width, u16 height)
 	sprite->nbTiles = (sprite->width/sprite->tileWidth) * (sprite->height/sprite->tileHeight);
 }
 
-void ML_DrawTile(ML_Sprite *sprite, int x, int y, u16 frame)
+void ML_DrawTileColor(ML_Sprite *sprite, int x, int y, GXColor rgba, u16 frame)
 {
-	if(!ML_IsSpriteVisible(sprite)) return;
+	if(!ML_IsSpriteVisible(sprite)) 
+		return;
 	
-	 sprite->x = x; sprite->y = y;
-
-	_drawImage(&sprite->image->texObj, sprite->image->data, sprite->x, sprite->y, sprite->width, sprite->height, sprite->scaleX, sprite->scaleY, sprite->angle, sprite->alpha, sprite->tiled, frame, sprite->tileWidth, sprite->tileHeight, sprite->flipX, sprite->flipY);
+	sprite->x = x; sprite->y = y;
+	_drawImage(&sprite->image->texObj, sprite->image->data, sprite->x, sprite->y, sprite->width, sprite->height, sprite->scaleX, sprite->scaleY, sprite->angle, rgba, sprite->tiled, frame, sprite->tileWidth, sprite->tileHeight, sprite->flipX, sprite->flipY);
 }
 
-void ML_DrawSpriteText(ML_Sprite *sprite, int x, int y, const char *text, ...)
+void ML_DrawSpriteColorText(ML_Sprite *sprite, int x, int y, GXColor color, const char *text, ...)
 { 
 	int i = 0, size = 0, j = 0; // current index, size, number of char for this line passed
     char buffer[1024];
-	u8 c = 0; // current char
+	int sz_x, sz_y;
 	
 	size = strlen(text);
-	if(size > 1024) return;
+	if(size > 1024) 
+		return;
 	
     va_list argp;
     va_start(argp, text);
     size = vsprintf(buffer, text, argp);
     va_end(argp);
-	
+		
+	sz_x = sprite->tileWidth*sprite->scaleX;
+	sz_y = sprite->tileHeight*sprite->scaleY;
     for(i=0; i < size; i++)
     {
-        c = buffer[i]-32;
         if(buffer[i] == '\n')
         {
-        	y += sprite->tileHeight*sprite->scaleY;
-        	j = 0;
-        }
-        else if(x+j*sprite->tileWidth*sprite->scaleX >= _screenWidth) 
-        { 
-        	y += sprite->tileHeight*sprite->scaleY; 
-        	ML_DrawTile(sprite, x, y, c); 
+        	y += sz_y;
+			if(y >= _screenHeight)
+				return;
         	j = 0;
         }
         else {
-			ML_DrawTile(sprite, x+j*sprite->tileWidth*sprite->scaleX, y, c); 
+			if(x+j*sz_x >= _screenWidth) 
+			{ 
+				y += sz_y;
+				if(y > _screenHeight)
+					return;
+				j = 0;
+			}
+			
+			ML_DrawTileColor(sprite, x+j*sz_x, y, color, (u8)(buffer[i]-32)); 
 			j++;
 		}
-        
-        if(y+sprite->tileHeight*sprite->scaleY >= _screenHeight) 
-			return;
     }
 }
 
-void ML_DrawSpriteTextBox(ML_Sprite *sprite, int x, int y, int x2, int y2, const char *text, ...)
+void ML_DrawSpriteColorTextBox(ML_Sprite *sprite, int x, int y, int x2, int y2, GXColor color, const char *text, ...)
 {
 	int i = 0, size = 0, j = 0; // current index, size, number of char for this line passed
     char buffer[1024];
-	u8 c = 0; // current char
+	int sz_x, sz_y;
 	
 	size = strlen(text);
 	if(size > 1024) return;
 	
     va_list argp;
     va_start(argp, text);
-    size = vsprintf(buffer, text, argp);
+    size = vsnprintf(buffer, sizeof(buffer), text, argp);
     va_end(argp);
 	
+	sz_x = sprite->tileWidth*sprite->scaleX;
+	sz_y = sprite->tileHeight*sprite->scaleY;
     for(i=0; i < size; i++)
     {
-        c = buffer[i]-32;
         if(buffer[i] == '\n')
         {
-        	y += sprite->tileHeight*sprite->scaleY;
+        	y += sz_y;
+			if(y >= y2)
+				return;
         	j = 0;
         }
-        else if(x+j*sprite->tileWidth*sprite->scaleX >= x2) 
-        { 
-        	y += sprite->tileHeight*sprite->scaleY; 
-        	ML_DrawTile(sprite, x, y, c); 
-        	j = 0;
-        }
-        else { 
-			ML_DrawTile(sprite, x+j*sprite->tileWidth*sprite->scaleX, y, c); 
+        else {
+			if(x+j*sz_x >= x2) 
+			{ 
+				y += sz_y;
+				if(y > y2)
+					return;
+				j = 0;
+			}
+			
+			ML_DrawTileColor(sprite, x+j*sz_x, y, color, (u8)(buffer[i]-32)); 
 			j++;
-        }
-        if(y+sprite->tileHeight*sprite->scaleY >= y2) 
-			return;
+		}
     }
 }
 
-// Contribution of Cid2Mizard
-void ML_DrawSpriteTextLimit(ML_Sprite *sprite, int x, int y, char *text, u8 limit) 
+void ML_DrawSpriteColorTextLimit(ML_Sprite *sprite, int x, int y, GXColor color, u8 limit, char *text, ...)
 {
-	char temp = text[limit];  
-	text[limit] = 0;  
-	ML_DrawSpriteSimpleText(sprite, x, y, text);  
-	text[limit] = temp;
+	char buffer[256];
+	va_list argp;
+    
+	va_start(argp, text);
+    vsnprintf(buffer, sizeof(buffer), text, argp);
+    va_end(argp);
+	
+	buffer[limit]='\0'; 
+	ML_DrawSpriteColorSimpleText(sprite, x, y, color, buffer);
 }
 
-void ML_DrawSpriteSimpleText(ML_Sprite *sprite, int x, int y, const char *text)
+void ML_DrawSpriteColorSimpleText(ML_Sprite *sprite, int x, int y, GXColor color, const char *text)
 {
 	int i = 0, size = strlen(text);
 	u8 c = 0;
@@ -178,7 +188,7 @@ void ML_DrawSpriteSimpleText(ML_Sprite *sprite, int x, int y, const char *text)
     for(i=0; i < size; i++)
     {
         c = text[i]-32;
-        ML_DrawTile(sprite, x+i*sprite->tileWidth*sprite->scaleX, y, c);
+        ML_DrawTileColor(sprite, x+i*sprite->tileWidth*sprite->scaleX, y, color, c);
     }
 }
 
@@ -238,7 +248,9 @@ void ML_MoveSpriteWiimoteIR(ML_Sprite *sprite, u8 wpad)
 		sprite->y = Wiimote[wpad].IR.Y - (sprite->tileHeight*sprite->scaleY/2);
 		
 		sprite->visible = true;
-	} else sprite->visible = false;
+	} 
+	else 
+		sprite->visible = false;
 }
 
 bool ML_IsWiimoteInSprite(u8 wpad, const ML_Sprite *sprite)
@@ -256,7 +268,8 @@ bool ML_IsWiimoteInSprite(u8 wpad, const ML_Sprite *sprite)
 	   sp1_up > cursorY ||
 	   sp1_down < cursorY)
 	   return false;
-	else return true;
+	
+	return true;
 }
 
 bool ML_IsWiimoteInSpriteEx(u8 wpad, const ML_Sprite *sprite)
@@ -276,31 +289,29 @@ bool ML_IsWiimoteInSpriteEx(u8 wpad, const ML_Sprite *sprite)
        sp1_up > sp2_down ||
        sp1_down < sp2_up)
        return false;
-    else
-    {
-    	int rect_left, rect_up, posX_spr2 = 0, posY_spr2 = 0;
-		
-		if(sp1_up < sp2_up)
-			rect_up = sp2_up;
-		else rect_up = sp1_up;
 
-		if(sp1_left < sp2_left)
-			rect_left = sp2_left;
-		else rect_left = sp1_left;
-		
-		posX_spr2 = abs(sp2_left - rect_left);
-		posY_spr2 = abs(sp2_up - rect_up);
+	int rect_left, rect_up, posX_spr2 = 0, posY_spr2 = 0;
+	
+	if(sp1_up < sp2_up)
+		rect_up = sp2_up;
+	else rect_up = sp1_up;
 
-		// Exploration des pixels dans le rectangle commun		
-		u32 offset = (((posY_spr2 >> 2)<<4)*(sprite->width)) + ((posX_spr2 >> 2)<<6) + (((posY_spr2%4 << 2) + posX_spr2%4 ) << 1); 
-		u8 a = *(sprite->image->data+offset);
-		
-		// Teste si le pixel n'est pas transparent
-		if(a != 0x00)
-			return true;
-		
-		return false;
-	}
+	if(sp1_left < sp2_left)
+		rect_left = sp2_left;
+	else rect_left = sp1_left;
+	
+	posX_spr2 = abs(sp2_left - rect_left);
+	posY_spr2 = abs(sp2_up - rect_up);
+
+	// Exploration des pixels dans le rectangle commun		
+	u32 offset = (((posY_spr2 >> 2)<<4)*(sprite->width)) + ((posX_spr2 >> 2)<<6) + (((posY_spr2%4 << 2) + posX_spr2%4 ) << 1); 
+	u8 a = *(sprite->image->data+offset);
+	
+	// Teste si le pixel n'est pas transparent
+	if(a != 0x00)
+		return true;
+	
+	return false;
 }
 
 bool ML_IsCollision(const ML_Sprite *sprite, const ML_Sprite *sprite2)
@@ -445,7 +456,7 @@ void ML_Cursor(ML_Sprite *sprite, u8 wpad)
 	if(sprite->animated)
 		ML_DrawSprite(sprite);
 	else if(sprite->tiled)
-		ML_DrawTile(sprite, sprite->x, sprite->y, sprite->currentFrame);
+		ML_DrawTileColor(sprite, sprite->x, sprite->y, (GXColor){0xff,0xff,0xff,0xff}, sprite->currentFrame);
 	else ML_DrawSprite(sprite);
 	
 	if(Wiimote[wpad].IR.Valid)// && sprite->x > 0 - sprite->width*sprite->scaleX && sprite->y > 0 - sprite->height*sprite->scaleY) 
