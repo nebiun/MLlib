@@ -5,6 +5,8 @@
 * \brief This file contains sprites functions.
 */
 
+u16 (*_DrawSpriteTextConverter)(u16) = NULL;
+
 void _initSprite(ML_Sprite *sprite)
 {		
 	*sprite = (ML_Sprite){0};
@@ -82,70 +84,25 @@ void ML_DrawTileColor(ML_Sprite *sprite, int x, int y, GXColor rgba, u16 frame)
 	if(!ML_IsSpriteVisible(sprite)) 
 		return;
 	
-	sprite->x = x; sprite->y = y;
+	sprite->x = x; 
+	sprite->y = y;
 	_drawImage(&sprite->image->texObj, sprite->image->data, sprite->x, sprite->y, sprite->width, sprite->height, sprite->scaleX, sprite->scaleY, sprite->angle, rgba, sprite->tiled, frame, sprite->tileWidth, sprite->tileHeight, sprite->flipX, sprite->flipY);
 }
 
-void ML_DrawSpriteColorText(ML_Sprite *sprite, int x, int y, GXColor color, const char *text, ...)
-{ 
-	int i = 0, size = 0, j = 0; // current index, size, number of char for this line passed
-    char buffer[1024];
-	int sz_x, sz_y;
-	
-	size = strlen(text);
-	if(size > 1024) 
-		return;
-	
-    va_list argp;
-    va_start(argp, text);
-    size = vsprintf(buffer, text, argp);
-    va_end(argp);
-		
-	sz_x = sprite->tileWidth*sprite->scaleX;
-	sz_y = sprite->tileHeight*sprite->scaleY;
-    for(i=0; i < size; i++)
-    {
-        if(buffer[i] == '\n')
-        {
-        	y += sz_y;
-			if(y >= _screenHeight)
-				return;
-        	j = 0;
-        }
-        else {
-			if(x+j*sz_x >= _screenWidth) 
-			{ 
-				y += sz_y;
-				if(y > _screenHeight)
-					return;
-				j = 0;
-			}
-			
-			ML_DrawTileColor(sprite, x+j*sz_x, y, color, (u8)(buffer[i]-32)); 
-			j++;
-		}
-    }
-}
-
-void ML_DrawSpriteColorTextBox(ML_Sprite *sprite, int x, int y, int x2, int y2, GXColor color, const char *text, ...)
+static void _DrawSpriteTextBox(ML_Sprite *sprite, int x, int y, int x2, int y2, GXColor color, const char *text)
 {
-	int i = 0, size = 0, j = 0; // current index, size, number of char for this line passed
-    char buffer[1024];
+	int i, size, j;
 	int sz_x, sz_y;
+	u16 c;
 	
 	size = strlen(text);
-	if(size > 1024) return;
-	
-    va_list argp;
-    va_start(argp, text);
-    size = vsnprintf(buffer, sizeof(buffer), text, argp);
-    va_end(argp);
-	
 	sz_x = sprite->tileWidth*sprite->scaleX;
 	sz_y = sprite->tileHeight*sprite->scaleY;
+	
+	j=0;
     for(i=0; i < size; i++)
     {
-        if(buffer[i] == '\n')
+        if(text[i] == '\n')
         {
         	y += sz_y;
 			if(y >= y2)
@@ -160,11 +117,44 @@ void ML_DrawSpriteColorTextBox(ML_Sprite *sprite, int x, int y, int x2, int y2, 
 					return;
 				j = 0;
 			}
+			if(_DrawSpriteTextConverter != NULL)
+				c = _DrawSpriteTextConverter((u16)text[i]);
+			else
+				c = (u16)(text[i]-32);
 			
-			ML_DrawTileColor(sprite, x+j*sz_x, y, color, (u8)(buffer[i]-32)); 
+			ML_DrawTileColor(sprite, x+j*sz_x, y, color, c); 
 			j++;
 		}
     }
+}
+
+void ML_DrawSpriteTextSetConverter(u16(*hook)(u16))
+{
+	_DrawSpriteTextConverter = hook;
+}
+
+void ML_DrawSpriteColorTextBox(ML_Sprite *sprite, int x, int y, int x2, int y2, GXColor color, const char *text, ...)
+{
+    char buffer[1024];
+	
+    va_list argp;
+    va_start(argp, text);
+    vsnprintf(buffer, sizeof(buffer), text, argp);
+    va_end(argp);
+	
+	_DrawSpriteTextBox(sprite, x, y, x2, y2, color, buffer);
+}
+
+void ML_DrawSpriteColorText(ML_Sprite *sprite, int x, int y, GXColor color, const char *text, ...)
+{ 
+    char buffer[1024];
+	
+    va_list argp;
+    va_start(argp, text);
+    vsnprintf(buffer, sizeof(buffer), text, argp);
+    va_end(argp);
+		
+	_DrawSpriteTextBox(sprite, x, y, _screenWidth, _screenHeight, color, buffer);
 }
 
 void ML_DrawSpriteColorTextLimit(ML_Sprite *sprite, int x, int y, GXColor color, u8 limit, char *text, ...)
@@ -182,12 +172,16 @@ void ML_DrawSpriteColorTextLimit(ML_Sprite *sprite, int x, int y, GXColor color,
 
 void ML_DrawSpriteColorSimpleText(ML_Sprite *sprite, int x, int y, GXColor color, const char *text)
 {
-	int i = 0, size = strlen(text);
-	u8 c = 0;
+	int i, size = strlen(text);
+	u16 c;
 	
     for(i=0; i < size; i++)
     {
-        c = text[i]-32;
+		if(_DrawSpriteTextConverter != NULL)
+			c = _DrawSpriteTextConverter((u16)text[i]);
+		else
+			c = (u16)(text[i]-32);
+		
         ML_DrawTileColor(sprite, x+i*sprite->tileWidth*sprite->scaleX, y, color, c);
     }
 }
@@ -485,4 +479,3 @@ void ML_SetSpriteAlpha(ML_Sprite *sprite, u8 alpha) { sprite->alpha = alpha; }
 void ML_FlipSpriteX(ML_Sprite *sprite, bool flipX) { sprite->flipX = flipX; }
 void ML_FlipSpriteY(ML_Sprite *sprite, bool flipY) { sprite->flipY = flipY; }
 void ML_FlipSpriteXY(ML_Sprite *sprite, bool flipX, bool flipY) { sprite->flipX = flipX; sprite->flipY = flipY; }
-

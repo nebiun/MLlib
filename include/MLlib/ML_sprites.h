@@ -163,6 +163,14 @@ extern void ML_DrawSpriteColorSimpleText(ML_Sprite *sprite, int x, int y, GXColo
 #define ML_DrawSpriteSimpleText(sprite, x, y, text)		ML_DrawSpriteColorSimpleText(sprite, x, y, (GXColor){0xff,0xff,0xff,((ML_Sprite *)sprite)->alpha}, text)
 
 /**
+* \fn void ML_DrawSpriteTextSetConverter(u16(*hook)(u16))
+* \brief This function sets the address of the function that will be called to translate the character of the string \n
+into the index of the sprite's Tile before displaying it.
+* @param hook Function address
+*/
+extern void ML_DrawSpriteTextSetConverter(u16(*hook)(u16));
+
+/**
 * \fn void ML_CloneSprite(ML_Sprite *sprite1, ML_Sprite *sprite2)
 * \brief This function clones two sprites.
 * @param sprite1 The original sprite

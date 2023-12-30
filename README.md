@@ -3,6 +3,9 @@ Minishlink/MLlib clone
 
 More info (https://github.com/Minishlink/MLlib/).
 
+1.3.3:
+- Added ML_DrawSpriteTextSetConverter
+
 1.3.2:
 - Added new routines to write colored tiles
 - Fix ML_DrawSpriteTextBox

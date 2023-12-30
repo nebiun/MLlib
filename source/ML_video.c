@@ -143,7 +143,7 @@ void ML_DrawRect(int x, int y, u16 width, u16 height, u32 rgba, bool filled)
 			GX_Color1u32(rgba);
 		GX_End();
     }
-	GX_DrawDone();
+//	GX_DrawDone();
 }
 
 void ML_DrawCircle(int x, int y, int radius, u32 rgba, bool filled)
@@ -168,7 +168,7 @@ void ML_DrawCircle(int x, int y, int radius, u32 rgba, bool filled)
 		GX_Color1u32(rgba);
 	}
 	GX_End();
-	GX_DrawDone();
+//	GX_DrawDone();
 }
 
 void ML_Brightness(u8 alpha)
@@ -183,7 +183,7 @@ void ML_Brightness(u8 alpha)
         GX_Color4u8(0x00, 0x00, 0x00, alpha);
     }
     GX_End();
-	GX_DrawDone();
+//	GX_DrawDone();
 }
 
 bool ML_FadeIn(void)
@@ -520,7 +520,7 @@ void _drawImage(GXTexObj *texObj, u8 *data, int x, int y, u16 _width, u16 _heigh
 			GX_TexCoord2f32(s1, t2);
 		GX_End();
 	}
-	GX_DrawDone();
+//	GX_DrawDone();
 	GX_LoadPosMtxImm(GXmodelView2D, GX_PNMTX0);
 
 	GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
@@ -573,7 +573,7 @@ void FreeTypeGX_copyTextureToFramebuffer(GXTexObj *texObj, int16_t screenX, int1
 		GX_Color4u8(color.r, color.g, color.b, alpha);
 		GX_TexCoord2f32(flipX, !flipY);
 	GX_End();
-	GX_DrawDone();
+//	GX_DrawDone();
 	
 	GX_LoadPosMtxImm(GXmodelView2D, GX_PNMTX0);
 
@@ -616,7 +616,7 @@ void FreeTypeGX_copyFeatureToFramebuffer(f32 featureWidth, f32 featureHeight, in
 			GX_Position3f32(-width, height, 0.0f);
 			GX_Color4u8(color.r, color.g, color.b, alpha);
 	GX_End();
-	GX_DrawDone();
+//	GX_DrawDone();
 	
 	GX_LoadPosMtxImm(GXmodelView2D, GX_PNMTX0);
 
@@ -716,6 +716,8 @@ void ML_GX_Init(void)
 
 void ML_GX_Refresh(void)
 {
+	GX_DrawDone();
+	
 	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 	GX_SetColorUpdate(GX_TRUE);
 	GX_CopyDisp(xfb[whichfb],GX_TRUE);
